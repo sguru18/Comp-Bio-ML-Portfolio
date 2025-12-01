@@ -5,7 +5,7 @@ Welcome! This repository is a collection of my projects in machine learning and 
 ML Foundations
 | Project | Description | Techniques | Date Completed |
 |---------|-------------|------------|------------|
-| [Self-Driving Car Game]() | A game for 1-2 players to drive through traffic while competing with a pre-trained self-driving car | Neural networks, Genetic algorithms, Model training | 04/2024 |
+| [Self-Driving Car Game](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/ML%20Foundations/self-driving-car-game) | A game for 1-2 players to drive through traffic while competing with a pre-trained self-driving car | Neural networks, Genetic algorithms, Model training | 04/2024 |
 | [Neural Net From Scratch](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/ML%20Foundations/neural-net-from-scratch) | A minimal neural net built to practice the mathematics of backpropagation and gradient descent | ReLU, Backpropagation, Gradient descent | 08/2024 |
 
 Computational Biology

@@ -5,7 +5,7 @@ This project implements a neural network from scratch with a genetic algorithm t
 
 The above features and visualizations were implemented following videos 1-10 from the YouTube playlist at https://www.youtube.com/playlist?list=PLB0Tybl0UNfYoJE7ZwsBQoDIG4YN9ptyY.
 
-I then added my own code to expand the project into a game for 1-2 players to play against the AI and/or each other. This was also my first time deploying a project online, which you can find [here](). 
+I then added my own code to expand the project into a game for 1-2 players to play against the AI and/or each other. This was also my first time deploying a project online, which you can find [here](https://self-driving-car-game-theta.vercel.app). Safari is recommended.
 
 Originally written 04/2024 (senior year of high school) as my first ever side project. Uploaded 12/2025. 
 
@@ -17,6 +17,6 @@ Key Learnings:
 
 # Usage
 
-Check it out [here]()!
+Check it out [here](https://self-driving-car-game-theta.vercel.app)! Safari is recommended.
 
  
