@@ -1,7 +1,7 @@
 # Self Driving Car Game
 This project implements a neural network from scratch with a genetic algorithm to train a self-driving car. The car uses ray casting to detect distance from other cars and the sides of the road, and passes this info into a neural net with one input node per ray. These pass through a hidden layer to 4 output nodes, each encoding acceleration in a cardinal direction. 
 
-
+![Project Demo Image](src/assets/demo.png)
 
 The above features and visualizations were implemented following videos 1-10 from the YouTube playlist at https://www.youtube.com/playlist?list=PLB0Tybl0UNfYoJE7ZwsBQoDIG4YN9ptyY.
 
