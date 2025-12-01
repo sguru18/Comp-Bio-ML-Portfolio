@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<head>
+    <title> JS Car Proj</title>
+    <link rel ="stylesheet" href="src/styles/style.css">
+</head>
+<body>
+    <div id = "verticalButtons">
+    <a href = "#home" class = "button" id = "button">Rules</a>
+    <button id = "toggle" onclick="toggleTwoPlayerMode(this)">Toggle Two <br> Player Mode</button>
+</div>
+
+<div class ="popup">
+    <div class = "popup-content">
+        <h3>Welcome! Here's how the game works:</h3>
+        <p>- You and the computer both have 10 sets of random traffic obstacles to navigate, but your car
+            is faster. <br> 
+            - The objective of the game is to get through all of your traffic before the computer passes its 
+            traffic. <br>- You will lose if you crash into the road's borders or another car. <br>
+            - The graphics in the center are just a visualization of how the computer drives (so you can 
+            see what keeps beating you).</p>
+            <p> Grab a friend and try two player mode! Player 1 (left) will use the arrow keys and 
+                Player 2 (right) will use WASD. 
+            </p>
+            <h3>Enjoy!</h3>
+        <img src = "src/assets/close.png" alt = "Close" class = "close">
+    </div>
+</div>
+
+    <canvas id = "carCanvas"></canvas>
+    <div id = "verticalButtons">
+        <button2 onclick="refresh()">
+            <img src="src/assets/refresh.png" alt="refresh" style="width: 24px; height: 24px;" />
+        </button2>
+
+        <!-- Used to train the model -->
+        <!-- <button2 onclick="save()">
+            <img src="src/assets/save.png" alt="save" style="width: 24px; height: 24px;" />
+        </button2>
+        <button2 onclick="discard()">
+            <img src="src/assets/discard.png" alt="discard" style="width: 24px; height: 24px;" />
+        </button2> -->
+
+    </div>
+    <canvas id = "networkCanvas"></canvas>
+    <div id = "verticalButtons">
+        <button2 onclick="refresh()">
+            <img src="src/assets/refresh.png" alt="refresh" style="width: 24px; height: 24px;" />
+        </button2>
+    </div>
+    <canvas id = "playerCanvas"></canvas>
+    <canvas id = "player2Canvas"></canvas>
+    <script src="src/utils/utils.js"></script>
+    <script src="src/components/car.js"></script>
+    <script src="src/components/visualizer.js"></script>
+    <script src="src/components/network.js"></script>
+    <script src="src/components/sensor.js"></script>
+    <script src="src/components/road.js"></script>
+    <script src="src/components/controls.js"></script>
+    <script src="src/main.js"></script>
+    <script>
+
+        document.getElementById("button").addEventListener("click", function(){
+            document.querySelector(".popup").style.display = "flex";
+        })
+
+        document.querySelector(".close").addEventListener("click", function(){
+            document.querySelector(".popup").style.display = "none";
+        })
+
+
+    </script>
+</body>
+</html>

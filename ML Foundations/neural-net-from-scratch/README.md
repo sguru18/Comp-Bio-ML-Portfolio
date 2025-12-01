@@ -7,7 +7,7 @@ Originally written 08/2024 (summer after high school) as the first ML-related co
 
 Key Learnings:
 - ReLU activation function
-- Backpropagation (via writing out chain rule calculations and matrix dimensions)
+- Backpropagation mathematics (via writing out chain rule calculations and matrix dimensions)
 - Gradient descent 
 
 # Usage
