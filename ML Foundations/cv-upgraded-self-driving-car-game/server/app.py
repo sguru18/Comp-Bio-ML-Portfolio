@@ -22,6 +22,8 @@ if __name__ == '__main__':
 
 
 # TODO
+# make new div and styling for webcam
+# remove 2 player functionality
 # start/stop camera button, off by default
 # updated instructions and visible by default with local storage to toggle default on
 # then detect two pens when camera is on
