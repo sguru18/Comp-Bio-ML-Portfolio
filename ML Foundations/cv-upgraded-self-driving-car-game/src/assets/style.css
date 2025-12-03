@@ -47,6 +47,7 @@ button2:hover{
 #networkCanvas{
     background:lightslategrey;
     box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
+    display: none;
 }
 #playerCanvas{
     background:lightgrey;

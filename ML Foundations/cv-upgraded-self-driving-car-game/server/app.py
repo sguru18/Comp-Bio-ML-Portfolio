@@ -19,6 +19,10 @@ def stream():
 def stream_with_annotations():
     return Response(get_frame_with_hands_detected(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@socketio.on('startWebcam')
+def start(data):
+    print('received message: ' + data)
+
 if __name__ == '__main__':
     socketio.run(app, port=8000)
 

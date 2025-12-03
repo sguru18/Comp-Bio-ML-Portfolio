@@ -1,3 +1,40 @@
+
+
+navigator.getUserMedia = ( navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia);
+
+function turnOnWebcam() {
+    try {
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+
+            // release camera since this is just for permissions, python backend will access camera
+            const tracks = stream.getTracks();
+            tracks.forEach((track) => {
+                track.stop();
+            });
+            
+            // signal backend to start feed
+            // var socket = io();
+            // socket.emit('startWebcam');
+
+            const image = document.getElementById("webcam");
+            image.src = '/annotated';
+            image.style.display = 'block';
+
+        }).catch((error) => {
+            console.log(error);
+        })
+    } catch (error) {
+        console.log(error);
+    } 
+}
+
+function stopWebcam() {
+    // have to send a signal to python backend, probably websocket event
+}
+
 function lerp(A, B, t){
     return  A+(B-A)*t;
 }
