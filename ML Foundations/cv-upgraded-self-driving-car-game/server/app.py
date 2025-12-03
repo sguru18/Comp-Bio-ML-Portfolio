@@ -1,7 +1,7 @@
 from flask import Flask, render_template, send_from_directory, Response
 from flask_socketio import SocketIO
 import cv2
-from cv_controller import get_frame
+from cv_controller import get_frame, get_frame_with_hands_detected
 
 app = Flask(__name__, static_folder='..', static_url_path='')
 # app.config['SECRET_KEY'] = 'secret!'
@@ -14,6 +14,10 @@ def index():
 @app.route('/mjpeg')
 def stream():
     return Response(get_frame(), mimetype='multipart/x-mixed-replace; boundary=frame') # Response to stream output of generator function
+
+@app.route('/annotated')
+def stream_with_annotations():
+    return Response(get_frame_with_hands_detected(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     socketio.run(app, port=8000)

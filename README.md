@@ -1,5 +1,5 @@
 # Computational Biology & ML Portfolio
-Welcome! This repository is a collection of my projects in machine learning and computational biology, built to structure and track my learning. I code all the projects in this repository by hand to practice the technical concepts I learn, using AI only for research and debugging non-logic issues (ie. library usage).
+Welcome! This repository is a collection of my projects in machine learning and computational biology, built to structure and track my learning. I code all the projects in this repository by hand to practice the technical concepts I learn, using AI only for research and debugging non-logic issues.
 
 # Project Summaries
 ML Foundations
