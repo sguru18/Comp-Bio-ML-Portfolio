@@ -1,129 +1,128 @@
-body{
-    margin:0;
-    background: darkgrey;
-    overflow:hidden;
-    display:flex;
-    justify-content: center;
-    align-items: center;
+body {
+  margin: 0;
+  background: darkgrey;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-#verticalButtons{
-    display:flex;
-    flex-direction: column;
+#verticalButtons {
+  display: flex;
+  flex-direction: column;
 }
 
-button{
-    border: none;
-    border-radius: 5px;
-    padding: 5px 5px 7px 5px;
-    margin: 2px;
-    cursor: pointer;
+button {
+  border: none;
+  border-radius: 5px;
+  padding: 5px 5px 7px 5px;
+  margin: 2px;
+  cursor: pointer;
 }
-button:hover{
-    background:seagreen;
-}
-
-button2{
-    border: none;
-    border-radius: 5px;
-    padding: 5px 5px 7px 5px;
-    margin: 6px;
-    cursor: pointer;
-    background: lightseagreen;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-button2:hover{
-    background:seagreen;
+button:hover {
+  background: seagreen;
 }
 
-
-#carCanvas{
-    background:lightgrey;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
+button2 {
+  border: none;
+  border-radius: 5px;
+  padding: 5px 5px 7px 5px;
+  margin: 6px;
+  cursor: pointer;
+  background: lightseagreen;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-#networkCanvas{
-    background:lightslategrey;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
-}
-#outputCanvas{
-    background:lightslategrey;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
-}
-#playerCanvas{
-    background:lightgrey;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
-}
-#player2Canvas{
-    background:lightgrey;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
+button2:hover {
+  background: seagreen;
 }
 
-#toggle{
-    background: lightseagreen; 
-    padding: 14px 15px;
-    margin-right: 10px;
-    text-transform: uppercase;
-    font-size: 14px;
-    border-radius: 5px;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
-    color: white;
-    text-decoration: none;
+#carCanvas {
+  background: lightgrey;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+}
+#networkCanvas {
+  background: lightslategrey;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+}
+#outputCanvas {
+  background: lightslategrey;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+}
+#playerCanvas {
+  background: lightgrey;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+}
+#player2Canvas {
+  background: lightgrey;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
 }
 
-.button{
-    background: lightseagreen; 
-    padding: 14px 15px;
-    font-weight: bolder;
-    font-family: "Helvetica Neue", Arial, sans-serif;
-    margin-right: 10px;
-    margin-bottom: 30px;
-    text-transform: uppercase;
-    font-size: 20px;
-    border-radius: 5px;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
-    color: white;
-    text-decoration: none;
-    text-align: center;
+#toggle {
+  background: lightseagreen;
+  padding: 14px 15px;
+  margin-right: 10px;
+  text-transform: uppercase;
+  font-size: 14px;
+  border-radius: 5px;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+  color: white;
+  text-decoration: none;
 }
 
-.button:hover{
-    background-color: seagreen;
-    color: white
+.button {
+  background: lightseagreen;
+  padding: 14px 15px;
+  font-weight: bolder;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  margin-right: 10px;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  font-size: 20px;
+  border-radius: 5px;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+  color: white;
+  text-decoration: none;
+  text-align: center;
 }
 
-.popup{
-    background: rgba(0,0,0,0.6);
-    width: 100%;
-    height: 100%; 
-    position: absolute;
-    top:0;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+.button:hover {
+  background-color: seagreen;
+  color: white;
 }
 
-.popup-content{
-    height: 300px;
-    width: 400px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    position: relative;
+.popup {
+  background: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
-.close{
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    background: #fff;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    border-color: white;
-    box-shadow: 6px 6px 29px -4px rgba(0,0,0,0.75);
-    cursor: pointer;
+.popup-content {
+  height: 300px;
+  width: 400px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: #fff;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border-color: white;
+  box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
+  cursor: pointer;
 }
