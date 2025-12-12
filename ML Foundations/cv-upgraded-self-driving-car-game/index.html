@@ -2,14 +2,10 @@
 <head>
     <title> JS Car Proj</title>
     <link rel ="stylesheet" href="src/assets/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-    <script type="text/javascript" charset="utf-8">
-        var socket = io();
-        socket.on('connect', function() {
-            console.log('connected to server');
-            socket.emit('my event', {data: 'I\'m connected!'});
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div id = "verticalButtons">
@@ -52,10 +48,17 @@
     </div>
     <canvas id = "networkCanvas"></canvas>
 
-    <button2 onclick="turnOnWebcam()">
+    <button2 id="startWebcam">
         <p> Start Webcam </p>
     </button2>
-    <img id = "webcam" src = "" alt = "feed" style = "display: none; width: 320px; height: 240px;" />
+    <button2 id="stopWebcam">
+        <p> Stop Webcam </p>
+    </button2>
+
+    <!-- <img id = "webcam" src = "" alt = "feed" style = "display: none; width: 320px; height: 240px;" /> -->
+
+    <video class="webcam"></video>
+    <canvas class="output_canvas" width="1280px" height="720px"></canvas>
 
     <div id = "verticalButtons">
         <button2 onclick="refresh()">
@@ -64,15 +67,9 @@
     </div>
     <canvas id = "playerCanvas"></canvas>
     <canvas id = "player2Canvas"></canvas>
-    <script src="src/utils/utils.js"></script>
-    <script src="src/components/car.js"></script>
-    <script src="src/components/visualizer.js"></script>
-    <script src="src/components/network.js"></script>
-    <script src="src/components/sensor.js"></script>
-    <script src="src/components/road.js"></script>
-    <script src="src/components/controls.js"></script>
-    <script src="src/main.js"></script>
-    <script>
+    <script type="module" src="src/main.js"></script>
+    <script type="module">
+        import {turnOnWebcam, stopWebcam} from "./src/utils/utils.js"
 
         document.getElementById("button").addEventListener("click", function(){
             document.querySelector(".popup").style.display = "flex";
@@ -81,6 +78,9 @@
         document.querySelector(".close").addEventListener("click", function(){
             document.querySelector(".popup").style.display = "none";
         })
+
+        document.getElementById("startWebcam").addEventListener("click", turnOnWebcam)
+        document.getElementById("stopWebcam").addEventListener("click", stopWebcam)
 
 
     </script>

@@ -1,92 +1,74 @@
+import { camera, initializeCamera } from "./mediapipe.js";
 
+let cam = null;
 
-navigator.getUserMedia = ( navigator.getUserMedia ||
-    navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia ||
-    navigator.msGetUserMedia);
+export function turnOnWebcam() {
+  if (cam) return; // camera is already started
 
-function turnOnWebcam() {
-    try {
-        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-
-            // release camera since this is just for permissions, python backend will access camera
-            const tracks = stream.getTracks();
-            tracks.forEach((track) => {
-                track.stop();
-            });
-            
-            // signal backend to start feed
-            // var socket = io();
-            // socket.emit('startWebcam');
-
-            const image = document.getElementById("webcam");
-            image.src = '/annotated';
-            image.style.display = 'block';
-
-        }).catch((error) => {
-            console.log(error);
-        })
-    } catch (error) {
-        console.log(error);
-    } 
+  initializeCamera();
+  const videoElement = document.getElementsByClassName("webcam")[0];
+  cam = camera(videoElement);
+  cam.start();
 }
 
-function stopWebcam() {
-    // have to send a signal to python backend, probably websocket event
+export function stopWebcam() {
+  if (cam) return;
+  cam.stop();
+  cam = null;
+  // TODO: anything else to do here? probably clear output ctx
 }
 
-function lerp(A, B, t){
-    return  A+(B-A)*t;
+export function lerp(A, B, t) {
+  return A + (B - A) * t;
 }
 
-function getIntersection(A,B,C,D){
-    const tTop = (D.x - C.x)*(A.y-C.y)-(D.y-C.y)*(A.x-C.x);
-    const uTop = (C.y-A.y)*(A.x-B.x)-(C.x-A.x)*(A.y-B.y);
-    const bottom = (D.y-C.y)*(B.x-A.x)-(D.x-C.x)*(B.y-A.y);
+export function getIntersection(A, B, C, D) {
+  const tTop = (D.x - C.x) * (A.y - C.y) - (D.y - C.y) * (A.x - C.x);
+  const uTop = (C.y - A.y) * (A.x - B.x) - (C.x - A.x) * (A.y - B.y);
+  const bottom = (D.y - C.y) * (B.x - A.x) - (D.x - C.x) * (B.y - A.y);
 
-    if (bottom!=0){
-        const t = tTop/bottom;
-        const u = uTop/bottom;
-        if(t>=0 && t<=1 && u>=0 && u<=1){
-            return{
-                x:lerp(A.x,B.x,t),
-                y:lerp(A.y,B.y,t),
-                offset:t
-            }
-        }
+  if (bottom != 0) {
+    const t = tTop / bottom;
+    const u = uTop / bottom;
+    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+      return {
+        x: lerp(A.x, B.x, t),
+        y: lerp(A.y, B.y, t),
+        offset: t,
+      };
     }
-
-    return null;
-}
-
-function polysIntersect(poly1, poly2){
-    for(let i = 0; i<poly1.length;i++){
-        for (let j = 0; j<poly2.length;j++){
-            const touch = getIntersection(
-                poly1[i],
-                poly1[(i+1)%poly1.length],
-                poly2[j],
-                poly2[(j+1)%poly2.length],
-            )
-            if(touch){
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-function getRGBA(value){
-    const alpha = Math.abs(value);
-    const R = value<0?0:255;
-    const G = R;
-    const B = value>0?0:255;
-    return("rgba("+R+","+G+","+B+","+alpha+")");
-}
-
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
-  
+
+  return null;
+}
+
+export function polysIntersect(poly1, poly2) {
+  for (let i = 0; i < poly1.length; i++) {
+    for (let j = 0; j < poly2.length; j++) {
+      const touch = getIntersection(
+        poly1[i],
+        poly1[(i + 1) % poly1.length],
+        poly2[j],
+        poly2[(j + 1) % poly2.length]
+      );
+      if (touch) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function getRGBA(value) {
+  const alpha = Math.abs(value);
+  const R = value < 0 ? 0 : 255;
+  const G = R;
+  const B = value > 0 ? 0 : 255;
+  return "rgba(" + R + "," + G + "," + B + "," + alpha + ")";
+}
+
+export function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
