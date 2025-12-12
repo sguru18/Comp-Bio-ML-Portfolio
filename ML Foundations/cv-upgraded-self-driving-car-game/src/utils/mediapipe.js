@@ -1,3 +1,11 @@
+let angle_deg = 0;
+let ready = false;
+
+// to access angle info from main.js
+export function getAngleDeg() {
+  return parseInt(angle_deg);
+}
+
 const hands = new Hands({
   locateFile: (file) => {
     return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
@@ -6,21 +14,19 @@ const hands = new Hands({
 hands.setOptions({
   maxNumHands: 2,
   modelComplexity: 1,
-  minDetectionConfidence: 0.69,
-  minTrackingConfidence: 0.69,
+  minDetectionConfidence: 0.6,
+  minTrackingConfidence: 0.6,
 });
 
 export function initializeCamera() {
   const canvasElement = document.getElementsByClassName("output_canvas")[0];
   const canvasCtx = canvasElement.getContext("2d");
 
-  // draw stuff on the image
-  // TODO: calculate degree here i think
   function onResults(results) {
     canvasCtx.save();
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     canvasCtx.translate(480, 0);
-    canvasCtx.scale(-1, 1);
+    canvasCtx.scale(-1, 1); // mirror the image
     canvasCtx.drawImage(
       results.image,
       0,
@@ -37,7 +43,6 @@ export function initializeCamera() {
         let y = parseInt(landmark.y * 320, 10); // height
         pts.push([x, y]);
         for (const pt of pts) {
-          console.log(pt);
           canvasCtx.beginPath();
           canvasCtx.arc(pt[0], pt[1], 5, 0, Math.PI * 2);
           canvasCtx.fillStyle = "red";
@@ -48,10 +53,17 @@ export function initializeCamera() {
         pts.sort((a, b) => {
           return a[0] - b[0];
         });
-        let angle_deg = 0;
         let angle = 0;
 
         if (pts.length == 2) {
+          // set ready flag in localStorage if this is the first time two hands are detected
+          // so game loop can read it and start countdown
+          if (!ready) {
+            ready = true;
+            localStorage.setItem("readyToStartGame", JSON.stringify(true));
+            console.log("ready");
+          }
+
           // line between the two dots
           canvasCtx.beginPath();
           canvasCtx.moveTo(pts[0][0], pts[0][1]);

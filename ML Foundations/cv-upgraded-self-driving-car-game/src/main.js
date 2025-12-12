@@ -1,33 +1,15 @@
 import { getRandomInt } from "./utils/utils.js";
+import { getAngleDeg } from "./utils/mediapipe.js";
 import { Car } from "./components/car.js";
 import { Road } from "./components/road.js";
 import { NeuralNetwork } from "./components/network.js";
 import { Visualizer } from "./components/visualizer.js";
 
-var twoPlayers = null;
-if (JSON.parse(localStorage.getItem("twoPlayers")) == null) {
-  //if it doesn't exist yet, initialize it to false
-  twoPlayers = false;
-  localStorage.setItem("twoPlayers", JSON.stringify(twoPlayers));
-} else {
-  twoPlayers = JSON.parse(localStorage.getItem("twoPlayers"));
-}
+var twoPlayers = false;
 
 localStorage.setItem("twoPlayers", JSON.stringify(twoPlayers));
 
-function toggleTwoPlayerMode(event) {
-  if (JSON.parse(localStorage.getItem("twoPlayers")) == false) {
-    event.innerHTML = "Two Player Mode: <br> On! (Refresh)";
-    twoPlayers = true;
-    localStorage.setItem("twoPlayers", JSON.stringify(twoPlayers));
-  } else if (JSON.parse(localStorage.getItem("twoPlayers")) == true) {
-    event.innerHTML = "Two Player Mode: <br> Off! (Refresh)";
-    twoPlayers = false;
-    localStorage.setItem("twoPlayers", JSON.stringify(twoPlayers));
-  } else {
-    event.innerHTML = "error";
-  }
-}
+// if (JSON.parse(localStorage.getItem("twoPlayers")) == false)
 
 const carCanvas = document.getElementById("carCanvas");
 carCanvas.width = 200;
@@ -84,34 +66,6 @@ for (let i = 1; i < numTrafficObstacles * 2; i += 2) {
   gameTraffic.push(car3);
 }
 
-const player2Canvas = document.getElementById("player2Canvas");
-twoPlayers ? (player2Canvas.width = 200) : (player2Canvas.width = 0);
-const player2Ctx = player2Canvas.getContext("2d");
-const player2Road = new Road(
-  player2Canvas.width / 2,
-  player2Canvas.width * 0.9
-);
-const player2Car = new Car(player2Road.getLaneCenter(1), 100, 30, 50, "WASD");
-const player2traffic = [];
-for (let i = 1; i < numTrafficObstacles * 2; i += 2) {
-  let car2 = new Car(
-    player2Road.getLaneCenter(getRandomInt(0, 2)),
-    -(i * 100),
-    30,
-    50,
-    "DUMMY"
-  );
-  let car3 = new Car(
-    player2Road.getLaneCenter(getRandomInt(0, 2)),
-    -(i * 100),
-    30,
-    50,
-    "DUMMY"
-  );
-  player2traffic.push(car2);
-  player2traffic.push(car3);
-}
-
 // Increase N and uncomment save / discard buttons in index.html to train new models
 const N = 1;
 const cars = generateCars(N);
@@ -135,12 +89,10 @@ if (localStorage.getItem("bestBrain")) {
       .catch((error) => console.error("Error loading brain data:", error));
   }
 }
-
+var setup2 = false;
+var setup = false;
 animate();
 animatePlayer();
-if (twoPlayers) {
-  animatePlayer2();
-}
 
 function save() {
   localStorage.setItem("bestBrain", JSON.stringify(bestCar.brain));
@@ -243,24 +195,33 @@ function isGameOver() {
 }
 
 function animatePlayer() {
-  playerCanvas.height = window.innerHeight;
+  let ready = JSON.parse(localStorage.getItem("readyToStartGame"));
 
-  for (let i = 0; i < gameTraffic.length; i++) {
-    gameTraffic[i].update(playerRoad.borders, []);
+  if (!setup2 || ready) {
+    playerCanvas.height = window.innerHeight;
+
+    for (let i = 0; i < gameTraffic.length; i++) {
+      gameTraffic[i].update(playerRoad.borders, []);
+    }
+
+    playerCtx.save();
+    playerCtx.translate(0, -playerCar.y + playerCanvas.height * 0.7);
+
+    playerRoad.draw(playerCtx);
+    for (let i = 0; i < gameTraffic.length; i++) {
+      gameTraffic[i].draw(playerCtx, "yellow");
+    }
+
+    playerCar.update(playerRoad.borders, gameTraffic);
+    playerCar.draw(playerCtx, "white");
+
+    playerCtx.restore();
   }
 
-  playerCtx.save();
-  playerCtx.translate(0, -playerCar.y + playerCanvas.height * 0.7); //HAVE TO CHANGE BEST CAR IN HERE TO PLAYER'S CAR
-
-  playerRoad.draw(playerCtx);
-  for (let i = 0; i < gameTraffic.length; i++) {
-    gameTraffic[i].draw(playerCtx, "yellow");
+  if (!setup2) {
+    setup2 = true;
   }
 
-  playerCar.update(playerRoad.borders, gameTraffic);
-  playerCar.draw(playerCtx, "white");
-
-  playerCtx.restore();
   if (isGameOver() == null) {
     requestAnimationFrame(animatePlayer);
   } else {
@@ -268,67 +229,44 @@ function animatePlayer() {
   }
 }
 
-function animatePlayer2() {
-  player2Canvas.height = window.innerHeight;
-
-  for (let i = 0; i < player2traffic.length; i++) {
-    player2traffic[i].update(player2Road.borders, []);
-  }
-
-  player2Ctx.save();
-  player2Ctx.translate(0, -player2Car.y + player2Canvas.height * 0.7); //HAVE TO CHANGE BEST CAR IN HERE TO PLAYER'S CAR
-
-  player2Road.draw(player2Ctx);
-  for (let i = 0; i < player2traffic.length; i++) {
-    player2traffic[i].draw(player2Ctx, "yellow");
-  }
-
-  player2Car.update(player2Road.borders, player2traffic);
-  player2Car.draw(player2Ctx, "white");
-
-  player2Ctx.restore();
-  if (isGameOver() == null) {
-    requestAnimationFrame(animatePlayer2);
-  } else {
-    networkCtx.fillText(isGameOver(), 150, 100);
-  }
-}
-
 function animate(time) {
-  for (let i = 0; i < traffic.length; i++) {
-    traffic[i].update(road.borders, []);
+  let ready = JSON.parse(localStorage.getItem("readyToStartGame"));
+
+  if (!setup || ready) {
+    for (let i = 0; i < traffic.length; i++) {
+      traffic[i].update(road.borders, []);
+    }
+    for (let i = 0; i < cars.length; i++) {
+      cars[i].update(road.borders, traffic);
+    }
+
+    bestCar = cars.find((c) => c.y == Math.min(...cars.map((c) => c.y)));
+
+    carCanvas.height = window.innerHeight;
+    networkCanvas.height = window.innerHeight;
+
+    carCtx.save();
+    carCtx.translate(0, -bestCar.y + carCanvas.height * 0.7);
+
+    road.draw(carCtx);
+    for (let i = 0; i < traffic.length; i++) {
+      traffic[i].draw(carCtx, "yellow");
+    }
+
+    carCtx.globalAlpha = 0.2;
+    for (let i = 0; i < cars.length; i++) {
+      cars[i].draw(carCtx, "white");
+    }
+    carCtx.globalAlpha = 1;
+    bestCar.draw(carCtx, "white", true);
+
+    carCtx.restore();
+  }
+  // mark setup as done
+  if (!setup) {
+    setup = true;
   }
 
-  for (let i = 0; i < cars.length; i++) {
-    cars[i].update(road.borders, traffic);
-  }
-
-  bestCar = cars.find((c) => c.y == Math.min(...cars.map((c) => c.y)));
-
-  carCanvas.height = window.innerHeight;
-  networkCanvas.height = window.innerHeight;
-
-  carCtx.save();
-  carCtx.translate(0, -bestCar.y + carCanvas.height * 0.7);
-
-  road.draw(carCtx);
-  for (let i = 0; i < traffic.length; i++) {
-    traffic[i].draw(carCtx, "yellow");
-  }
-
-  carCtx.globalAlpha = 0.2;
-  for (let i = 0; i < cars.length; i++) {
-    cars[i].draw(carCtx, "white");
-  }
-  carCtx.globalAlpha = 1;
-  bestCar.draw(carCtx, "white", true);
-
-  carCtx.restore();
-
-  networkCtx.lineDashOffset = -time / 50;
-  Visualizer.drawNetwork(networkCtx, bestCar.brain);
-
-  // requestAnimationFrame(animateSet2);
   if (isGameOver() == null) {
     requestAnimationFrame(animate);
   } else {
