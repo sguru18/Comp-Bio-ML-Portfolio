@@ -34,6 +34,8 @@ button2 {
   display: flex;
   justify-content: center;
   align-items: center;
+  color: white;
+  font-family: "Helvetica Neue", Arial, sans-serif;
 }
 button2:hover {
   background: seagreen;
@@ -70,6 +72,13 @@ button2:hover {
   box-shadow: 6px 6px 29px -4px rgba(0, 0, 0, 0.75);
   color: white;
   text-decoration: none;
+}
+
+.output_canvas {
+  border-radius: 5px;
+  border-color: lightseagreen;
+  border-width: 5px;
+  border-style: solid;
 }
 
 .button {

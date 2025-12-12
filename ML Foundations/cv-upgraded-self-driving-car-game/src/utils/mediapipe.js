@@ -85,8 +85,6 @@ export function initializeCamera() {
           canvasCtx.fillStyle = "red";
           canvasCtx.fillText(parseInt(angle_deg) + " deg", 40, 40);
         }
-
-        // flip image and write degrees on the iamge
       }
     }
     canvasCtx.restore();

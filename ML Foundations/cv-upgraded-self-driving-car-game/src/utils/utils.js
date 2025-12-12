@@ -12,10 +12,14 @@ export function turnOnWebcam() {
 }
 
 export function stopWebcam() {
-  if (cam) return;
+  if (!cam) return;
   cam.stop();
   cam = null;
   // TODO: anything else to do here? probably clear output ctx
+  console.log("stopping");
+  const canvasElement = document.getElementsByClassName("output_canvas")[0];
+  const canvasCtx = canvasElement.getContext("2d");
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 }
 
 export function lerp(A, B, t) {

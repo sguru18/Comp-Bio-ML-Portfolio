@@ -80,7 +80,10 @@
         })
 
         document.getElementById("startWebcam").addEventListener("click", turnOnWebcam)
-        document.getElementById("stopWebcam").addEventListener("click", stopWebcam)
+        document.getElementById("stopWebcam").addEventListener("click", function(){
+            console.log("clicked");
+            stopWebcam();
+        })
 
 
     </script>
