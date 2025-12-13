@@ -18,6 +18,10 @@ const networkCanvas = document.getElementById("networkCanvas");
 networkCanvas.width = 300;
 const numTrafficObstacles = 10;
 const networkCtx = networkCanvas.getContext("2d");
+const canvasElement = document.getElementById("endgameText");
+const canvasCtx = canvasElement.getContext("2d");
+canvasCtx.fillStyle = "white";
+canvasCtx.font = "30px sans-serif";
 
 const road = new Road(carCanvas.width / 2, carCanvas.width * 0.9);
 //breaks when no car in leftmost and car in middle lane at the very beginning
@@ -225,7 +229,7 @@ function animatePlayer() {
   if (isGameOver() == null) {
     requestAnimationFrame(animatePlayer);
   } else {
-    networkCtx.fillText(isGameOver(), 150, 100);
+    canvasCtx.fillText(isGameOver(), 170, 40);
   }
 }
 
@@ -270,6 +274,6 @@ function animate(time) {
   if (isGameOver() == null) {
     requestAnimationFrame(animate);
   } else {
-    networkCtx.fillText(isGameOver(), 150, 100);
+    canvasCtx.fillText(isGameOver(), 170, 40);
   }
 }

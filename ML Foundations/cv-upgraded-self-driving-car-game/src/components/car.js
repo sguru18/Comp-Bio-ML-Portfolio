@@ -87,7 +87,7 @@ export class Car {
   }
 
   #move(angleDeg) {
-    if (this.controls.forward || angleDeg) {
+    if (this.controls.forward || angleDeg || angleDeg === 0) {
       this.speed += this.acceleration;
     }
     if (this.controls.reverse) {
@@ -118,14 +118,11 @@ export class Car {
         this.angle -= 0.03 * flip;
       }
     }
-    if (!angleDeg) {
-      this.x -= Math.sin(this.angle) * this.speed;
-      this.y -= Math.cos(this.angle) * this.speed;
-    } else {
+    if (angleDeg) {
       this.angle = (angleDeg / 180) * Math.PI;
-      this.x -= Math.sin(this.angle) * this.speed;
-      this.y -= Math.cos(this.angle) * this.speed;
     }
+    this.x -= Math.sin(this.angle) * this.speed;
+    this.y -= Math.cos(this.angle) * this.speed;
   }
 
   draw(ctx, color, drawSensors = false) {
