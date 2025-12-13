@@ -27,9 +27,9 @@ export class Car {
     this.controls = new Controls(controlType);
   }
 
-  update(roadBorders, traffic) {
+  update(roadBorders, traffic, angleDeg) {
     if (!this.damaged) {
-      this.#move();
+      this.#move(angleDeg);
       this.polygon = this.#createPolygon();
       this.damaged = this.#assessDamage(roadBorders, traffic);
     }
@@ -86,8 +86,8 @@ export class Car {
     return points;
   }
 
-  #move() {
-    if (this.controls.forward) {
+  #move(angleDeg) {
+    if (this.controls.forward || angleDeg) {
       this.speed += this.acceleration;
     }
     if (this.controls.reverse) {
@@ -118,8 +118,14 @@ export class Car {
         this.angle -= 0.03 * flip;
       }
     }
-    this.x -= Math.sin(this.angle) * this.speed;
-    this.y -= Math.cos(this.angle) * this.speed;
+    if (!angleDeg) {
+      this.x -= Math.sin(this.angle) * this.speed;
+      this.y -= Math.cos(this.angle) * this.speed;
+    } else {
+      this.angle = (angleDeg / 180) * Math.PI;
+      this.x -= Math.sin(this.angle) * this.speed;
+      this.y -= Math.cos(this.angle) * this.speed;
+    }
   }
 
   draw(ctx, color, drawSensors = false) {

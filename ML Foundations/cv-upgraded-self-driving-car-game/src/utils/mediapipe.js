@@ -61,7 +61,6 @@ export function initializeCamera() {
           if (!ready) {
             ready = true;
             localStorage.setItem("readyToStartGame", JSON.stringify(true));
-            console.log("ready");
           }
 
           // line between the two dots

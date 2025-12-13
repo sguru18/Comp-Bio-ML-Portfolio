@@ -211,8 +211,8 @@ function animatePlayer() {
     for (let i = 0; i < gameTraffic.length; i++) {
       gameTraffic[i].draw(playerCtx, "yellow");
     }
-
-    playerCar.update(playerRoad.borders, gameTraffic);
+    let angleDeg = getAngleDeg();
+    playerCar.update(playerRoad.borders, gameTraffic, angleDeg);
     playerCar.draw(playerCtx, "white");
 
     playerCtx.restore();
