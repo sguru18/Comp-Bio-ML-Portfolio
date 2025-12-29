@@ -13,7 +13,7 @@ export class Car {
     this.speed = 0;
     this.acceleration = 0.2;
     this.maxSpeed =
-      controlType == "DUMMY" ? 1.5 : controlType == "AI" ? 3 : 3.5;
+      controlType == "DUMMY" ? 1.5 : controlType == "AI" ? 3 : 7.5;
     this.friction = 0.05;
     this.angle = 0;
     this.damaged = false;
