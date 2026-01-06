@@ -3,18 +3,22 @@
 import numpy as np
 import pandas as pd
 from collections import defaultdict
+from pathlib import Path
 
 SEED = 42
 RATIO = 0.2
+BASE_DIR = Path(__file__).resolve().parent.parent.parent # root dir
+DATA_DIR = BASE_DIR / "data"
 
 generator = np.random.default_rng(SEED)
 ids = defaultdict(list)
-df = pd.read_csv("../../data/Data_Entry_2017.csv")
+df = pd.read_csv(DATA_DIR / "Data_Entry_2017.csv")
 
 # 00000008_000.png
 # 00000008_001.png
 # 00000008_002.png
-f = open("../../data/train_val_list.txt")
+f = open(DATA_DIR / "train_val_list.txt")
+
 
 for line in f:
     filename = line.strip()
@@ -32,7 +36,7 @@ train_ids = set(unique_ids[num_val:])
 assert val_ids.isdisjoint(train_ids)
 
 # Write val list and csv
-o = open("../../data/val_list.txt", "w")
+o = open(DATA_DIR / "val_list.txt", "w")
 val_filenames = set()
 for iD in val_ids:
     for filename in ids[iD]:
@@ -42,10 +46,10 @@ o.close()
 
 bools = df["Image Index"].isin(val_filenames)
 val_df = df[bools]
-val_df.to_csv("../../data/val.csv", index = False)
+val_df.to_csv(DATA_DIR / "val.csv", index = False)
 
 # Write train list and csv
-o = open("../../data/train_list.txt", "w")
+o = open(DATA_DIR / "train_list.txt", "w")
 train_filenames = set()
 for iD in train_ids:
     for filename in ids[iD]:
@@ -55,7 +59,7 @@ o.close()
 
 bools = df["Image Index"].isin(train_filenames)
 train_df = df[bools]
-train_df.to_csv("../../data/train.csv", index = False)
+train_df.to_csv(DATA_DIR / "train.csv", index = False)
 
 f.close()
 
@@ -64,13 +68,13 @@ f.close()
 # print(f"Num patients in train: {len(train_ids)}")
 
 # Write test csv
-o = open("../../data/test_list.txt")
+o = open(DATA_DIR / "test_list.txt")
 test_filenames = set()
 for line in o:
     test_filenames.add(line.strip())
 bools = df["Image Index"].isin(test_filenames)
 test_df = df[bools]
-test_df.to_csv("../../data/test.csv", index = False)
+test_df.to_csv(DATA_DIR / "test.csv", index = False)
 o.close()
 
 # TODO: stratification by disease class might be good
