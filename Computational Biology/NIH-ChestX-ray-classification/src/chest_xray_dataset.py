@@ -1,30 +1,58 @@
 import pandas as pd
 import torch
 import torchvision
+import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
-from config.config import LOOKUP
+from config.config import LOOKUP, CLASSES
 from pathlib import Path
 
 
 class ChestXRayDataset(Dataset):
 
-    def __init__(self, csv, images, transforms):
+    # TODO: update to take transform as a param
+    def __init__(self, csv, train=True):
 
         self.df = pd.read_csv(csv)
-        self.image_dir = images
-        self.transforms = transforms
+        self.BASE_DIR = Path(__file__).resolve().parent.parent
+        self.transform = (
+            transforms.Compose(
+                [
+                    transforms.ToPILImage(),
+                    transforms.Resize((224, 224)),
+                    transforms.RandomRotation(5),
+                    transforms.ColorJitter(0.1, 0.1)
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.5], std=[0.5]
+                    ),  # TODO: calculate from dataset
+                ]
+            )
+            if train
+            else transforms.Compose(
+                [transforms.ToPILImage(), transforms.Resize((224, 224)), transforms.ToTensor()]
+            )
+        )
 
     def __len__(self):
         return len(self.df)
-    
+
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        BASE_DIR = Path(__file__).resolve().parent.parent
-        path = LOOKUP[self.df.iloc[idx]["Image Index"]] #ie. data/images/images_0{num}/images/00029464_010.png
+        path = LOOKUP[
+            self.df.iloc[idx]["Image Index"]
+        ]  # ie. data/images/images_0{num}/images/00029464_010.png
+
+        label = [0] * 15
+        findings = self.df.iloc[idx]["Finding Labels"].split("|")
+        for f in findings:
+            label[CLASSES[f]] = 1
+
         sample = {
-            "image": (torchvision.io.read_image(BASE_DIR / path) / 255.) ,
-            "label": self.df.iloc[idx]["Finding Labels"] # TODO: have to split by | ?? how to handle multi labels
+            "image": self.transform(
+                (torchvision.io.read_image(self.BASE_DIR / path))
+            ),
+            "label": torch.tensor(label, dtype=float32),
         }
 
-        
+        return sample

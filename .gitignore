@@ -4,3 +4,9 @@ venv
 *.png
 *.jpg
 *.csv
+
+*.json
+
+# Python cache
+__pycache__/
+*.py[cod]
