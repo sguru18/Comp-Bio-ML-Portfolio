@@ -6,6 +6,9 @@ from torch.utils.data import Dataset, DataLoader
 from config.config import LOOKUP, CLASSES
 from pathlib import Path
 
+# USAGE: ie. 
+# training_set = ChestXRayDataset(csv_path, train=True, transforms)
+# training_generator = torch.utils.data.DataLoader(training_set, batch_size=32, shuffle=True, num_workers=6)
 
 class ChestXRayDataset(Dataset):
 
@@ -41,7 +44,7 @@ class ChestXRayDataset(Dataset):
             idx = idx.tolist()
         path = LOOKUP[
             self.df.iloc[idx]["Image Index"]
-        ]  # ie. data/images/images_0{num}/images/00029464_010.png
+        ]  # ie. data/images/images_001/images/00029464_010.png
 
         label = [0] * 15
         findings = self.df.iloc[idx]["Finding Labels"].split("|")
