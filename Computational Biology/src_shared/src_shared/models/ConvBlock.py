@@ -5,10 +5,12 @@ import torch.nn as nn
 # this was my first time using torch.nn (a monumental occasion)
 class ConvBlock(nn.Module):
 
-    def __init__(self, channels_in, channels_out, kernel_size=3, padding=1, max_pool_size=2):
+    def __init__(
+        self, channels_in, channels_out, kernel_size=3, padding=1, max_pool_size=2
+    ):
         super().__init__()
 
-        self.conv = nn.Conv2d(channels_in, channels_out, kernel, padding)
+        self.conv = nn.Conv2d(channels_in, channels_out, kernel_size, padding)
         self.relu = nn.ReLU()
         self.pool = nn.MaxPool2d(max_pool_size)
 

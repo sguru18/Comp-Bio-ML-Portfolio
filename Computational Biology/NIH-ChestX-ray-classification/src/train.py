@@ -5,7 +5,7 @@ from src.datasets.ChestXRayDataset import ChestXRayDataset
 from src.transforms import train_transform, val_transform
 from pathlib import Path
 import yaml
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 if __name__ == "__main__":
     device = (
@@ -43,24 +43,29 @@ if __name__ == "__main__":
 
         # training
         model.train()
+        num_batches = 0
+        running_loss = 0
         for batch in tqdm(training_generator):
             # transfer to gpu
             images = batch["image"].to(device)
             labels = batch["label"].to(device)
 
-            predictions = model(images)  # [16, 14]
-            print(predictions) # TODO: why is this None?? should track shape through layers
+            predictions = model(images)  # [16, 15]
             loss = criterion(predictions, labels)
-            print(f"training loss: {loss.item()}")
+            running_loss += loss.item()
+            num_batches += 1
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        print(f"avg train loss: {running_loss / num_batches}")
 
         # validation
         model.eval()
-        with torch.set_grad_enabled(False):  # what is this???
-            for batch in val_generator:
+        with torch.set_grad_enabled(False):
+            num_batches = 0
+            running_loss = 0
+            for batch in tqdm(val_generator):
                 # transfer to gpu
                 images = batch["image"].to(device)
                 labels = batch["label"].to(device)
@@ -68,4 +73,6 @@ if __name__ == "__main__":
                 # model computations...
                 predictions = model(images)
                 loss = criterion(predictions, labels)
-                print(f"val loss: {loss.item()}")
+                running_loss += loss.item()
+                num_batches += 1
+            print(f"avg val loss: {running_loss / num_batches}")
