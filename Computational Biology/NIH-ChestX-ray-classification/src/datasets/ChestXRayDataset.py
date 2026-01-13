@@ -12,7 +12,7 @@ class ChestXRayDataset(Dataset):
     def __init__(self, csv, transform):
 
         self.df = pd.read_csv(csv)
-        self.BASE_DIR = Path(__file__).resolve().parent.parent
+        self.BASE_DIR = Path(__file__).resolve().parent.parent.parent
         self.transform = transform
 
     def __len__(self):
@@ -34,7 +34,7 @@ class ChestXRayDataset(Dataset):
             "image": self.transform(
                 (torchvision.io.read_image(self.BASE_DIR / path))
             ),
-            "label": torch.tensor(label, dtype=float32),
+            "label": torch.tensor(label, dtype=torch.float32),
         }
 
         return sample
