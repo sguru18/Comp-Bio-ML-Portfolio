@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
     ROOT_PATH = Path(__file__).resolve().parent.parent  # root dir
     DATA_DIR = ROOT_PATH / "data"
+    MODELS_DIR = ROOT_PATH / "src/models"
 
     with open(ROOT_PATH / "config/config.yaml", "r") as f:
         config = yaml.safe_load(f)
@@ -38,8 +39,9 @@ if __name__ == "__main__":
         val_set, batch_size=32, shuffle=False, num_workers=6
     )
 
-    for epoch in range(1):
-        print("-------------EPOCH {epoch}-------------")
+    best_val_loss = 100
+    for epoch in range(10):
+        print(f"-------------EPOCH {epoch}-------------")
 
         # training
         model.train()
@@ -58,7 +60,8 @@ if __name__ == "__main__":
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        print(f"avg train loss: {running_loss / num_batches}")
+        avg_train_loss = running_loss / num_batches
+        print(f"avg train loss: {avg_train_loss}")
 
         # validation
         model.eval()
@@ -75,4 +78,18 @@ if __name__ == "__main__":
                 loss = criterion(predictions, labels)
                 running_loss += loss.item()
                 num_batches += 1
-            print(f"avg val loss: {running_loss / num_batches}")
+
+            avg_val_loss = running_loss / num_batches
+            print(f"avg val loss: {avg_val_loss}")
+            if avg_val_loss < best_val_loss:
+                print("saving model to checkpoint.pt")
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "loss": loss,
+                        "best_val_loss": best_val_loss,
+                    },
+                    MODELS_DIR / "checkpoint.pt",
+                )
