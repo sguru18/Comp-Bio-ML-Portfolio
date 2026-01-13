@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 from tqdm import tqdm
 import numpy as np
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, confusion_matrix
 from config.config import CLASSES
 
 if __name__ == "__main__":
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         val_set, batch_size=32, shuffle=False, num_workers=6
     )
 
-    best_val_auc = 1000000
+    best_val_auc = 0
     for epoch in range(10):
         print(f"-------------EPOCH {epoch}-------------")
 
@@ -90,19 +90,43 @@ if __name__ == "__main__":
             print(f"avg val loss: {avg_val_loss}")
 
             # concatenate predictions and labels and move to cpu to calculate auc-roc
-            all_preds = torch.cat(all_preds, dim=0)
+            all_preds = torch.cat(all_preds, dim=0)  # [_, 15]
             all_preds = all_preds.cpu().numpy()
-            all_labels = torch.cat(all_labels, dim=0)
+            all_labels = torch.cat(all_labels, dim=0)  # [_, 15]
             all_labels = all_labels.cpu().numpy()
 
             individual_auc_roc = roc_auc_score(all_labels, all_preds, average=None)
-            for key, value in CLASSES.items():
-                print(f"{key} roc_auc: {individual_auc_roc[value]:.3f}")
+            total_sensitivity = 0
+            total_specificity = 0
+            for key, value in CLASSES.items():  # value is the index 0 - 14
+                # calculate sensitivity and specificity
+                y_true = all_labels[:, value]  # alreadys 1s and 0s
+                # TODO: 0.5 threshold to config.yaml
+                y_pred_binary = (all_preds[:, value] > 0.5).astype(int)
+                c = confusion_matrix(y_true, y_pred_binary)
+                TN, FP, FN, TP = c[0][0], c[0][1], c[1][0], c[1][1]
+                if (TP + FN) == 0:
+                    continue
+                sensitivity = TP / (TP + FN)  # AKA recall AKA true positive rate
+                total_sensitivity += sensitivity
+                if (TN + FP) == 0:
+                    continue
+                specificity = TN / (TN + FP)  # AKA true negative rate
+                total_specificity += specificity
+
+                print(
+                    f"{key} roc_auc: {individual_auc_roc[value]:.3f}, recall: {sensitivity:.3f}, specificity: {specificity:.3f}"
+                )
 
             single_auc_roc = roc_auc_score(all_labels, all_preds, average="macro")
+            macro_recall = total_sensitivity / 15
+            macro_specificity = total_specificity / 15
             print(f"MACRO ROC_AUC: {single_auc_roc:.3f}")
+            # TODO: move 15 num_classes to config.yaml
+            print(f"MACRO RECALL: {macro_recall:.3f}")
+            print(f"MACRO SPECIFICITY: {macro_specificity:.3f}")
 
-            if single_auc_roc < best_val_auc:
+            if single_auc_roc > best_val_auc:
                 best_val_auc = single_auc_roc
                 print("saving model to checkpoint.pt")
                 torch.save(
@@ -111,10 +135,11 @@ if __name__ == "__main__":
                         "model_state_dict": model.state_dict(),
                         "optimizer_state_dict": optimizer.state_dict(),
                         "macro_auc_roc": single_auc_roc,
-                        "loss": loss,
                         "avg_val_loss": avg_val_loss,
+                        "macro_recall": macro_recall,
+                        "macro_specificity": macro_specificity,
                     },
                     MODELS_DIR / "checkpoint.pt",
                 )
             else:
-                print("val loss not lower than previous epoch")
+                print("val auc_roc not lower than previous epoch")
