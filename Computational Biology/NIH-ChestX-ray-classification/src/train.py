@@ -55,7 +55,7 @@ if __name__ == "__main__":
             images = batch["image"].to(device)
             labels = batch["label"].to(device)
 
-            predictions = model(images)  # [16, 15]
+            predictions = model(images)  # [16, 14]
             loss = criterion(predictions, labels)
             running_loss += loss.item()
             num_batches += 1
@@ -90,37 +90,41 @@ if __name__ == "__main__":
             print(f"avg val loss: {avg_val_loss}")
 
             # concatenate predictions and labels and move to cpu to calculate auc-roc
-            all_preds = torch.cat(all_preds, dim=0)  # [_, 15]
+            all_preds = torch.cat(all_preds, dim=0)  # [_, 14]
             all_preds = all_preds.cpu().numpy()
-            all_labels = torch.cat(all_labels, dim=0)  # [_, 15]
+            all_labels = torch.cat(all_labels, dim=0)  # [_, 14]
             all_labels = all_labels.cpu().numpy()
 
             individual_auc_roc = roc_auc_score(all_labels, all_preds, average=None)
             total_sensitivity = 0
             total_specificity = 0
-            for key, value in CLASSES.items():  # value is the index 0 - 14
+            for key, value in CLASSES.items():  # value is the index 0 - 13
+                print(f"{key}   roc_auc: {individual_auc_roc[value]:.3f}", end=" ")
+                
                 # calculate sensitivity and specificity
                 y_true = all_labels[:, value]  # alreadys 1s and 0s
                 # TODO: 0.5 threshold to config.yaml
                 y_pred_binary = (all_preds[:, value] > 0.5).astype(int)
+                # TODO: move metric calculation from y_true and y_pred to src_shared/metrics
                 c = confusion_matrix(y_true, y_pred_binary)
                 TN, FP, FN, TP = c[0][0], c[0][1], c[1][0], c[1][1]
-                if (TP + FN) == 0:
-                    continue
-                sensitivity = TP / (TP + FN)  # AKA recall AKA true positive rate
-                total_sensitivity += sensitivity
-                if (TN + FP) == 0:
-                    continue
-                specificity = TN / (TN + FP)  # AKA true negative rate
-                total_specificity += specificity
+                
+                if (TP + FN) != 0:
+                    sensitivity = TP / (TP + FN)  # AKA recall AKA true positive rate
+                    total_sensitivity += sensitivity
+                    print(f"recall: {sensitivity:.3f}", end=" ")
+                if (TN + FP) != 0:
+                    specificity = TN / (TN + FP)  # AKA true negative rate
+                    total_specificity += specificity
+                    print(f"specificity: {specificity:.3f}", end=" ")
 
-                print(
-                    f"{key} roc_auc: {individual_auc_roc[value]:.3f}, recall: {sensitivity:.3f}, specificity: {specificity:.3f}"
-                )
+                print("\n")
+                print("\n")
+                
 
             single_auc_roc = roc_auc_score(all_labels, all_preds, average="macro")
-            macro_recall = total_sensitivity / 15
-            macro_specificity = total_specificity / 15
+            macro_recall = total_sensitivity / 14
+            macro_specificity = total_specificity / 14
             print(f"MACRO ROC_AUC: {single_auc_roc:.3f}")
             # TODO: move 15 num_classes to config.yaml
             print(f"MACRO RECALL: {macro_recall:.3f}")

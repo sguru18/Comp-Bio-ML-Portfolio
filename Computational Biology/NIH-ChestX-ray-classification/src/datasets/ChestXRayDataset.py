@@ -25,9 +25,11 @@ class ChestXRayDataset(Dataset):
             self.df.iloc[idx]["Image Index"]
         ]  # ie. data/images/images_001/images/00029464_010.png
 
-        label = [0] * 15
+        label = [0] * 14
         findings = self.df.iloc[idx]["Finding Labels"].split("|")
         for f in findings:
+            if f == "No Finding":
+                continue
             label[CLASSES[f]] = 1
 
         sample = {

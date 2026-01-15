@@ -5,7 +5,7 @@ from src_shared.models.ConvBlock import ConvBlock
 # 3 conv layers followed by 2 fully connected layers with 0.5 drouput in the middle
 class BaselineCNN(nn.Module):
 
-    def __init__(self, num_classes=15):
+    def __init__(self, num_classes=14):
         super().__init__()
         
         self.conv1 = ConvBlock(1, 32)

@@ -20,5 +20,4 @@ CLASSES = {
     "Nodule": 11,
     "Hernia": 12,
     "Mass": 13,
-    "No Finding": 14,
 }

@@ -27,12 +27,14 @@ indices = {
 }
 
 num_rows = data.shape[0]
-num_pos = [0] * 15
+num_pos = [0] * 14
 for i in range(num_rows):
 
     label = data.iloc[i]["Finding Labels"]
     findings = label.split("|")
     for f in findings:
+        if f == "No Finding":
+            continue
         num_pos[indices[f]] += 1
 
 num_neg = [num_rows - x for x in num_pos]
