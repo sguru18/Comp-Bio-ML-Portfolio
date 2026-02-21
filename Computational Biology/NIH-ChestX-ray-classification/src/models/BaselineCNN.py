@@ -20,7 +20,8 @@ class BaselineCNN(nn.Module):
         )  # 128 feature maps + each is 28 x 28 (maxpooled 3x), 128 as output is arbitrary
         self.dropout = nn.Dropout(0.5)
         self.fc2 = nn.Linear(128, num_classes)
-        self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid() # comment out because BCEWithLogitsLoss 
+            # applies sigmoid
 
     def forward(self, x):          # x = [batch_size, 1, 224, 224]
         x = self.conv1(x)    # x = [batch_size, 32, 112, 112]
@@ -30,6 +31,6 @@ class BaselineCNN(nn.Module):
         x = self.fc1(x)      # x = [batch_size, 128]
         x = self.dropout(x)
         x = self.fc2(x)      # x = [batch_size, num_classes]
-        x = self.sigmoid(x)  # x = [batch_size, num_classes]
+        # x = self.sigmoid(x)  # x = [batch_size, num_classes]
         
         return x

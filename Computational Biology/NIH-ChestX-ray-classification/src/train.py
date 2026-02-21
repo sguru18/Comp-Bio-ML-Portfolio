@@ -43,7 +43,7 @@ if __name__ == "__main__":
     )
 
     best_val_auc = 0
-    for epoch in range(10):
+    for epoch in range(100):
         print(f"-------------EPOCH {epoch}-------------")
 
         # training
@@ -100,15 +100,18 @@ if __name__ == "__main__":
             total_specificity = 0
             for key, value in CLASSES.items():  # value is the index 0 - 13
                 print(f"{key}   roc_auc: {individual_auc_roc[value]:.3f}", end=" ")
-                
+
                 # calculate sensitivity and specificity
                 y_true = all_labels[:, value]  # alreadys 1s and 0s
                 # TODO: 0.5 threshold to config.yaml
                 y_pred_binary = (all_preds[:, value] > 0.5).astype(int)
                 # TODO: move metric calculation from y_true and y_pred to src_shared/metrics
+                # print(f"y_true: {y_true}")
+                # print(f"y_pred: {y_pred_binary}")
                 c = confusion_matrix(y_true, y_pred_binary)
                 TN, FP, FN, TP = c[0][0], c[0][1], c[1][0], c[1][1]
-                
+                # print(TN, FP, FN, TP)
+
                 if (TP + FN) != 0:
                     sensitivity = TP / (TP + FN)  # AKA recall AKA true positive rate
                     total_sensitivity += sensitivity
@@ -118,9 +121,8 @@ if __name__ == "__main__":
                     total_specificity += specificity
                     print(f"specificity: {specificity:.3f}", end=" ")
 
-                print("\n")
-                print("\n")
-                
+            print("\n")
+            print("\n")
 
             single_auc_roc = roc_auc_score(all_labels, all_preds, average="macro")
             macro_recall = total_sensitivity / 14
