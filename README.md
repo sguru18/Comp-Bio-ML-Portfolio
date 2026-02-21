@@ -14,7 +14,8 @@ ML Foundations
 Computational Biology
 | Project | Description | Techniques | Date Completed |
 |---------|-------------|------------|------------|
-| [Chest X-Ray Classifier](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/Computational%20Biology/NIH-ChestX-ray-classification) | A CNN built from scratch using pytorch to classify scans from the [NIH chest x-ray dataset](https://www.kaggle.com/datasets/nih-chest-xrays/data?resource=download). | In progress | In progress |
+| [Chest X-Ray Classifier Iteration1](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/Computational%20Biology/NIH-ChestX-ray-classification) | A CNN built from scratch using pytorch to classify scans from the [NIH chest x-ray dataset](https://www.kaggle.com/datasets/nih-chest-xrays/data?resource=download). Goal was to learn the nitty gritty of CNNs. | Multi-label classification, BCE Loss, CNN Architecture, AUC-ROC | 02/2025 |
+| [Chest X-Ray Classifier Iteration2](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/Computational%20Biology/NIH-ChestX-ray-classification-2) |  Version 2 of ^, to explore transfer learning, grad-cam, attention, etc | In progress | In progress |
 
 # Timeline
 
