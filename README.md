@@ -1,6 +1,6 @@
 # Computational Biology & ML Portfolio
 
-Welcome! This repository is a collection of my projects in machine learning and computational biology, built to structure and track my learning. I code all the projects in this repository by hand to practice the technical concepts I learn, using AI only for research and debugging non-logic issues.
+Welcome! This repository is a collection of my projects in machine learning and computational biology, built to structure and track my learning. I code all the projects in this repository by hand (unless otherwise indicated) to practice the technical concepts I learn, using AI only for research and debugging non-logic issues.
 
 # Project Summaries
 
@@ -14,8 +14,8 @@ ML Foundations
 Computational Biology
 | Project | Description | Techniques | Date Completed |
 |---------|-------------|------------|------------|
-| [Chest X-Ray Classifier Iteration1](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/Computational%20Biology/NIH-ChestX-ray-classification) | A CNN built from scratch using pytorch to classify scans from the [NIH chest x-ray dataset](https://www.kaggle.com/datasets/nih-chest-xrays/data?resource=download). Goal was to learn the nitty gritty of CNNs. | Multi-label classification, BCE Loss, CNN Architecture, AUC-ROC | 02/2025 |
-| [Chest X-Ray Classifier Iteration2](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/Computational%20Biology/NIH-ChestX-ray-classification-2) |  Version 2 of ^, to explore transfer learning, grad-cam, attention, etc | In progress | In progress |
+| [Cryptic Site Detection Network]() | A graph attention network to predict cryptic protein binding sites. My first foray into computational biology. | Graph attention networks, multi-head attention, radius graphs | AI-assisted v1 finished 11/2025, revisions in progress |
+| [Chest X-Ray Classifier Iteration1](https://github.com/sguru18/Comp-Bio-ML-Portfolio/tree/main/Computational%20Biology/NIH-ChestX-ray-classification) | A CNN built from scratch using pytorch to classify scans from the [NIH chest x-ray dataset](https://www.kaggle.com/datasets/nih-chest-xrays/data?resource=download). Goal was to learn the nitty gritty of CNNs. | Multi-label classification, BCE Loss, CNN Architecture, AUC-ROC | 02/2026 |
 
 # Timeline
 
