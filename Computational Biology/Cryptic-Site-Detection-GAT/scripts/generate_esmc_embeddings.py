@@ -1,13 +1,67 @@
 import torch
+import numpy as np
 from transformers import AutoTokenizer, AutoModel
+import json
+from pathlib import Path
+from Bio.PDB.MMCIFParser import MMCIFParser
+from Bio.Data.IUPACData import protein_letters_3to1
 
-# copied from hugging face
-model = AutoModel.from_pretrained("biohub/ESMC-600M", device_map="auto").eval()
+dataset_path = (
+    Path(__file__).parent.parent / "data/cryptobench/cryptobench-dataset/dataset.json"
+)
+
+cif_files_path = (
+    Path(__file__).parent.parent
+    / "data/cryptobench/cryptobench-dataset/auxiliary-data/cif-files"
+)
+
+embeddings_path = Path(__file__).parent.parent / "data/esmc-embeddings"
+
+# huggingface parameter for device_map only works for cuda multi-gpu
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+model = AutoModel.from_pretrained("biohub/ESMC-600M").eval().to(device)
 tokenizer = AutoTokenizer.from_pretrained("biohub/ESMC-600M")
-inputs = tokenizer(GFP, return_tensors="pt", padding=True)
-inputs = {k: v.to(model.device) for k, v in inputs.items()}
 
-with torch.inference_mode():
-    output = model(**inputs)
+with open(dataset_path) as f:
+    dataset = json.load(f)
 
-print(f"last_hidden_state shape: {tuple(output.last_hidden_state.shape)}")
+parser = MMCIFParser(QUIET=True)
+
+for pdb_id, entries in dataset.items():
+    # entries is an array
+    # first go through all entries and make a set of all chains
+    # make sure to split entries like A-B
+    # we already validated that all chain names are valid in cif files and to just split on "-"
+    chains = set()
+    for entry in entries:
+        chains.add(entry["apo_chain"])  # "X" or "X-Y" or "AAA" or "AAA-CCC"
+    new_chains = set()
+    for chain in chains:
+        # need to split the hyphenated ones, split("-") has no effect on the others
+        split = chain.split("-")
+        new_chains.update(split)
+
+    structure = parser.get_structure(pdb_id, cif_files_path / f"{pdb_id}.cif")
+    bio_model = structure[0]
+
+    # now we have all individual chains mentioned for this protein in new_chains
+    for chain_id in new_chains:
+        chain = bio_model[chain_id]
+        sequence = ""
+        for residue in chain:
+            hetflag, _, _ = residue.get_id()
+            if hetflag == " ":
+                code = residue.get_resname()
+                letter = protein_letters_3to1.get(code, "X")
+                sequence += letter
+
+        inputs = tokenizer(sequence, return_tensors="pt")
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
+        with torch.inference_mode():
+            output = model(**inputs)
+        embeddings = output.last_hidden_state[0]
+        embeddings = embeddings[1:-1]
+        embeddings = embeddings.cpu().numpy()
+        np.save(embeddings_path / f"{pdb_id}_{chain_id}.npy", embeddings)
+        print(f"successfully saved {pdb_id}_{chain_id}.npy")
