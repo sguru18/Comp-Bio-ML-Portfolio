@@ -1,3 +1,6 @@
+# Check whether we just have to generate embeddings for the first apo_chain per protein
+# in dataset.json, or whether one protein's array can have multiple apo_chains of interest
+
 import json
 from pathlib import Path
 

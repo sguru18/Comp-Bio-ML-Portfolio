@@ -1,0 +1,6 @@
+biopython>=1.84
+numpy>=1.26
+torch>=2.0
+transformers>=5.0
+esm@git+https://github.com/Biohub/esm.git@main
+tqdm

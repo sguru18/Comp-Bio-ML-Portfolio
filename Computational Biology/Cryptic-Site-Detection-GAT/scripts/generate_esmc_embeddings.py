@@ -1,3 +1,5 @@
+# Generate the ESMC embeddings for all of the chains used in dataset.json
+
 import torch
 import numpy as np
 from transformers import AutoTokenizer, AutoModel
