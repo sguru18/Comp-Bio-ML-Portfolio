@@ -14,7 +14,7 @@ class BaselineCNN(nn.Module):
 
         self.flatten = nn.Flatten()  # because Linear requires 1d inputs
 
-        # TODO: why did I have to change this to 26 x 26? something with how maxpooling works?
+        # changed this to 26 x 26 instead of 28s, something with how maxpooling works I think
         self.fc1 = nn.Linear(
             128 * 26 * 26, 128
         )  # 128 feature maps + each is 28 x 28 (maxpooled 3x), 128 as output is arbitrary
