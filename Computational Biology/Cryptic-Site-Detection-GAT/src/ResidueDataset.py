@@ -16,8 +16,8 @@ class ResidueDataset(Dataset):
         self.embeddings = {}
         self.auth_seq_id_to_pos_map = {}
         self.positive_set = set()
-        DATA_DIR = Path(__file__).parent.parent.parent / "data"
-        EMBEDDINGS_DIR = Path(__file__).parent.parent.parent / "data/esmc-embeddings"
+        DATA_DIR = Path(__file__).parent.parent / "data"
+        EMBEDDINGS_DIR = Path(__file__).parent.parent / "data/esmc-embeddings"
         with open(DATA_DIR / "chain_to_auth_seq_id_map.json") as f:
             m = json.load(f)
 
@@ -26,10 +26,16 @@ class ResidueDataset(Dataset):
                 dataset = json.load(f)
             for pdb_id, entries in dataset.items():
                 chains = set()
+                apo_pocket_selection = set()
                 for entry in entries:
                     chains.update(entry["apo_chain"].split("-"))
-                    if entry["is_main_holo_structure"]:
-                        apo_pocket_selection = entry["apo_pocket_selection"]
+                    # NOTE: using the union of all apo_pocket_selections instead of selection
+                    # from the is_main_holo_structure pair only because this is what authors did
+                    # also many non-main pairings have pRMSD very close to the main, ie.
+                    # 2.39 to 2.17 so many other residues did actually move, using them
+                    # as negatives would hurt model training. alternative might be to introduce
+                    # a min_pRMSD parameter into dataset class
+                    apo_pocket_selection.update(entry["apo_pocket_selection"])
                 for chain in chains:
                     key = (pdb_id, chain)
                     self.embeddings[key] = np.load(
