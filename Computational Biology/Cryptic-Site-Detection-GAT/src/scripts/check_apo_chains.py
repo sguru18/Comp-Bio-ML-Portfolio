@@ -5,7 +5,8 @@ import json
 from pathlib import Path
 
 dataset_path = (
-    Path(__file__).parent.parent / "data/cryptobench/cryptobench-dataset/dataset.json"
+    Path(__file__).parent.parent.parent
+    / "data/cryptobench/cryptobench-dataset/dataset.json"
 )
 
 with open(dataset_path) as f:

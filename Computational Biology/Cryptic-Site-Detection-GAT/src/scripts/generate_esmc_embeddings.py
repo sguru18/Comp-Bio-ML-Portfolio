@@ -7,17 +7,21 @@ import json
 from pathlib import Path
 from Bio.PDB.MMCIFParser import MMCIFParser
 from Bio.Data.IUPACData import protein_letters_3to1
+from collections import defaultdict
 
 dataset_path = (
-    Path(__file__).parent.parent / "data/cryptobench/cryptobench-dataset/dataset.json"
+    Path(__file__).parent.parent.parent
+    / "data/cryptobench/cryptobench-dataset/dataset.json"
 )
 
 cif_files_path = (
-    Path(__file__).parent.parent
+    Path(__file__).parent.parent.parent
     / "data/cryptobench/cryptobench-dataset/auxiliary-data/cif-files"
 )
 
-embeddings_path = Path(__file__).parent.parent / "data/esmc-embeddings"
+embeddings_path = Path(__file__).parent.parent.parent / "data/esmc-embeddings"
+
+data_path = Path(__file__).parent.parent.parent / "data"
 
 # huggingface parameter for device_map only works for cuda multi-gpu
 if torch.backends.mps.is_available():
@@ -34,6 +38,8 @@ with open(dataset_path) as f:
     dataset = json.load(f)
 
 parser = MMCIFParser(QUIET=True)
+
+residue_map = defaultdict(list)
 
 for pdb_id, entries in dataset.items():
     # entries is an array
@@ -54,14 +60,17 @@ for pdb_id, entries in dataset.items():
 
     # now we have all individual chains mentioned for this protein in new_chains
     for chain_id in new_chains:
+        key = f"{pdb_id}_{chain_id}"
         chain = bio_model[chain_id]
         sequence = ""
         for residue in chain:
-            hetflag, _, _ = residue.get_id()
+            hetflag, auth_seq_id, _ = residue.get_id()
             if hetflag == " ":
                 code = residue.get_resname()
                 letter = protein_letters_3to1.get(code, "X")
                 sequence += letter
+
+                residue_map[key].append(auth_seq_id)
 
         inputs = tokenizer(sequence, return_tensors="pt")
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
@@ -73,3 +82,6 @@ for pdb_id, entries in dataset.items():
         embeddings = embeddings.cpu().numpy()
         np.save(embeddings_path / f"{pdb_id}_{chain_id}.npy", embeddings)
         print(f"successfully saved {pdb_id}_{chain_id}.npy")
+
+with open(data_path / "chain_to_auth_seq_id_map.json", "w") as f:
+    json.dump(residue_map, f)
