@@ -27,8 +27,7 @@ else:
     print("All PDB IDs have a consistent apo_chain across entries.")
 
 # Output confirms that not all holo entries per protein are on the
-# same chain, need to generate separate embeddings for all chains
-# mentioned
+# same chain, need to iterate across all of the entries so that we find all chains referenced
 # Found 23 PDB IDs with multiple apo_chains:
 #   1g1m: {'A-B', 'B'}
 #   1g1o: {'A', 'A-D', 'D'}
