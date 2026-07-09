@@ -112,6 +112,7 @@ for pdb_id, entries in dataset.items():
         # step3: average rows together that represent the same residue based on overlaps. this gives one
         # matrix of size [len_uniprot_seq, 2560]
         # step4: map each residue to its embedding in this matrix using the indices given by the aligner
+        final_embeddings = []  # this will become size [len(uniprot_sequence),2056]
         if len(uniprot_sequence) > 1022:
             # assuming ~50% overlap, this means each split after the first one contains 511 new residues
             n = len(uniprot_sequence) - 511
@@ -132,10 +133,10 @@ for pdb_id, entries in dataset.items():
             # step1
             for i in range(num_chains):
                 l = 511 * i
-                if i == num_chains - 1: # go until the end, no need to manually set r
+                if i == num_chains - 1:  # go until the end, no need to manually set r
                     split_chains.append(uniprot_sequence[l:])
                 else:
-                    r = l + 511 
+                    r = l + 511
                     split_chains.append(uniprot_sequence[l:r])
             uniprot_embeddings = []
             # step2
@@ -147,16 +148,58 @@ for pdb_id, entries in dataset.items():
                 embeddings = output.last_hidden_state[0]
                 embeddings = embeddings[1:-1]
                 embeddings = embeddings.to(torch.float32).cpu().numpy()
-                uniprot_embeddings.append(embeddings)
+                uniprot_embeddings.append(embeddings)  # size [1022, 2056]
             # step3
-            for i in range(num_chains-1):
+            # move the first 511 of the first chain over, this doesn't overlap with anything so no averaging to do
+            for i in range(511):
+                final_embeddings.append(uniprot_embeddings[0][i])
+            # handle the overlapping segments
+            for i in range(num_chains - 2):
                 this_chain = embeddings[i]
-                next_chain = embeddings[i+1]
+                next_chain = embeddings[
+                    i + 1
+                ]  # next_chain goes up until num_chains-2, never touches the last one
                 # second half of this chain and first half of next chain represent the same residues
                 # have to be careful at the end though
+                for idx in range(511):
+                    a = this_chain[511 + idx]
+                    b = next_chain[
+                        idx
+                    ]  # a and b are numpy vectors right? yes of size 2056
+                    c = (a + b) / 2
+                    final_embeddings.append(c)
+            # handle second half of second-to-last chain + last chain
+            i = 0
+            j = 0
+            a = this_chain[num_chains - 2]  # second to last
+            b = this_chain[num_chains - 1]  # the last chain
+            while i < 511:
+                first = a[i + 511]  # gauranteed to exist
+                if j < len(b):
+                    second = b[j]
+                    avg = (first + second) / 2
+                    final_embeddings.append(avg)
+                else:  # we have finished all the embeddings in the last chain, just toss this one in
+                    final_embeddings.append(first)
+                i += 1
+                j += 1
+
+            # lol that last part resembles a leetcode pattern. makes me kinda happy
+            # this approach works even when num_chains = 2, middle section just doesn't run
+            # and num_chains cannot equal 1 because then we wouldn't enter here
 
         else:
-            # lol
+            # just embed the single uniprot sequence as is. yippee
+            inputs = tokenizer(uniprot_sequence, return_tensors="pt")
+            inputs = {k: v.to(model.device) for k, v in inputs.items()}
+            with torch.inference_mode():
+                output = model(**inputs)
+            embeddings = output.last_hidden_state[0]
+            embeddings = embeddings[1:-1]
+            embeddings = embeddings.to(torch.float32).cpu().numpy()
+            final_embeddings.append(embeddings)
+
+        # step4, align using map indices
 
         np.save(embeddings_path / f"{pdb_id}_{chain_id}.npy", embeddings)
         print(f"successfully saved {pdb_id}_{chain_id}.npy")
