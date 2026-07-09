@@ -17,7 +17,7 @@ class ResidueDataset(Dataset):
         self.auth_seq_id_to_pos_map = {}
         self.positive_set = set()
         DATA_DIR = Path(__file__).parent.parent / "data"
-        EMBEDDINGS_DIR = Path(__file__).parent.parent / "data/esmc-embeddings"
+        EMBEDDINGS_DIR = Path(__file__).parent.parent / "data/esm2-embeddings"
         with open(DATA_DIR / "chain_to_auth_seq_id_map.json") as f:
             m = json.load(f)
 
@@ -61,8 +61,13 @@ class ResidueDataset(Dataset):
                 # add the ones in apo_pocket_selection to self.positive_set
                 for p in apo_pocket_selection:
                     chain, seq_id = p.split("_")
-                    seq_id = int(seq_id)
-                    pos = self.auth_seq_id_to_pos_map[f"{pdb_id}_{chain}_{seq_id}"]
+                    try:
+                        pos = self.auth_seq_id_to_pos_map[f"{pdb_id}_{chain}_{seq_id}"]
+                    except KeyError:
+                        print(
+                            f"non-standard amino acid OR truncated residue on 1 of 5 chains found in apo_pocket_selection and skipped"
+                        )
+                        continue
                     self.positive_set.add((pdb_id, chain, pos))
 
     def __len__(self):

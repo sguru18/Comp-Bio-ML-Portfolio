@@ -25,9 +25,9 @@ if __name__ == "__main__":
     # TODO: pos_weight, how to make dynamic?
     # pos_weight = torch.load(DATA_DIR / "pos_weight.pt", map_location=device)
     # criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-    criterion = nn.BCEWithLogitsLoss()
+    # criterion = nn.BCEWithLogitsLoss()
     # TODO: move hyperparams to config
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
 
     all_folds = [FOLDS_DIR / f"train-fold-{i}.json" for i in range(4)]
 
@@ -37,19 +37,24 @@ if __name__ == "__main__":
     train_folds = all_folds[:3]
     training_set = ResidueDataset(train_folds)
     training_generator = torch.utils.data.DataLoader(
-        training_set, batch_size=512, shuffle=True, num_workers=0
+        training_set, batch_size=2048, shuffle=True, num_workers=0
     )
+
+    num_pos = len(training_set.positive_set)
+    num_neg = len(training_set) - num_pos
+    pos_weight = torch.tensor([num_neg / num_pos], dtype=torch.float32).to(device)
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     val_fold = [all_folds[3]]
     val_set = ResidueDataset(val_fold)
     val_generator = torch.utils.data.DataLoader(
-        val_set, batch_size=512, shuffle=False, num_workers=0
+        val_set, batch_size=2048, shuffle=False, num_workers=0
     )
 
     best_val_auprc = 0
     best_val_auroc = 0
     # TODO: move
-    NUM_EPOCHS = 10
+    NUM_EPOCHS = 50
     for epoch in range(NUM_EPOCHS):
         print(f"-------------EPOCH {epoch}-------------")
 

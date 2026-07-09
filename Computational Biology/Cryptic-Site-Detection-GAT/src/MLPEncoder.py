@@ -20,7 +20,7 @@ class MLPEncoder(nn.Module):
         super().__init__()
 
         self.relu = nn.ReLU()
-        self.fc1 = nn.Linear(1152, 256)
+        self.fc1 = nn.Linear(2560, 256)
         self.fc2 = nn.Linear(256, 128)
         self.dropout = nn.Dropout(0.3)
 

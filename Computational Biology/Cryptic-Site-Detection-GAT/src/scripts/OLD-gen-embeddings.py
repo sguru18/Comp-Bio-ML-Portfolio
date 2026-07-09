@@ -1,4 +1,6 @@
 # Generate the ESMC embeddings for all of the chains used in dataset.json
+# Later used to generate ESM2 embeddings
+# Abandoned in favor of using the whole UniProt sequences after both esmc and esm2 yielded very poor results
 
 import torch
 import numpy as np
@@ -13,14 +15,12 @@ dataset_path = (
     Path(__file__).parent.parent.parent
     / "data/cryptobench/cryptobench-dataset/dataset.json"
 )
-
 cif_files_path = (
     Path(__file__).parent.parent.parent
     / "data/cryptobench/cryptobench-dataset/auxiliary-data/cif-files"
 )
-
-embeddings_path = Path(__file__).parent.parent.parent / "data/esmc-embeddings"
-
+# embeddings_path = Path(__file__).parent.parent.parent / "data/esmc-embeddings"
+embeddings_path = Path(__file__).parent.parent.parent / "data/esm2-embeddings"
 data_path = Path(__file__).parent.parent.parent / "data"
 
 # huggingface parameter for device_map only works for cuda multi-gpu
@@ -31,8 +31,15 @@ elif torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
-model = AutoModel.from_pretrained("biohub/ESMC-600M").eval().to(device)
-tokenizer = AutoTokenizer.from_pretrained("biohub/ESMC-600M")
+# model = AutoModel.from_pretrained("biohub/ESMC-600M").eval().to(device)
+model = (
+    AutoModel.from_pretrained("facebook/esm2_t36_3B_UR50D", torch_dtype=torch.float32)
+    .eval()
+    .to(device)
+)
+# tokenizer = AutoTokenizer.from_pretrained("biohub/ESMC-600M")
+tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t36_3B_UR50D")
+
 
 with open(dataset_path) as f:
     dataset = json.load(f)
@@ -64,13 +71,18 @@ for pdb_id, entries in dataset.items():
         chain = bio_model[chain_id]
         sequence = ""
         for residue in chain:
-            hetflag, auth_seq_id, _ = residue.get_id()
+            hetflag, auth_seq_id, icode = residue.get_id()
             if hetflag == " ":
                 code = residue.get_resname()
                 letter = protein_letters_3to1.get(code, "X")
                 sequence += letter
 
-                residue_map[key].append(auth_seq_id)
+                residue_map[key].append(f"{auth_seq_id}{icode.strip()}")
+
+        if len(sequence) > 1022:
+            print(f"WARNING: {key} truncated from {len(sequence)} to 1022 residues")
+            sequence = sequence[:1022]
+            residue_map[key] = residue_map[key][:1022]
 
         inputs = tokenizer(sequence, return_tensors="pt")
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
@@ -79,7 +91,7 @@ for pdb_id, entries in dataset.items():
             output = model(**inputs)
         embeddings = output.last_hidden_state[0]
         embeddings = embeddings[1:-1]
-        embeddings = embeddings.cpu().numpy()
+        embeddings = embeddings.to(torch.float32).cpu().numpy()
         np.save(embeddings_path / f"{pdb_id}_{chain_id}.npy", embeddings)
         print(f"successfully saved {pdb_id}_{chain_id}.npy")
 
