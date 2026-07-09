@@ -1,2 +1,5 @@
-data/cryptobench/*
+data/cryptobench/benchmark/*
+data/cryptobench/cryptobench-dataset/*
+data/cryptobench/scripts/*
+data/cryptobench/README.md
 data/esmc-embeddings/*
