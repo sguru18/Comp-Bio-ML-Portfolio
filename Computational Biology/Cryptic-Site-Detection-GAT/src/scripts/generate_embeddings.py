@@ -80,11 +80,13 @@ for pdb_id, entries in dataset.items():
             resp.raise_for_status()
         except requests.RequestException as exc:
             print(f"  WARNING: UniProt FASTA error for {uId}: {exc}")
+            continue
         # response is a header line that starts with > and then lines of 60 char chunks of AA codes
         lines = resp.text.strip().split("\n")
         if not lines or not lines[0].startswith(">"):
             print(f"  WARNING: Unexpected FASTA format for {uId}")
             # we saw that this does happen, 14 chains will not have uniprot sequences
+            continue
             # TODO: fallback to embedding the pdb sequence itself without uniprot
         uniprot_sequence = "".join(lines[1:])
 
@@ -101,18 +103,31 @@ for pdb_id, entries in dataset.items():
                 # position of its residue. ie. residue 0 of this chain maps to the auth_seq_id in index 0
                 residue_map[key].append(f"{auth_seq_id}{icode.strip()}")
 
-        # TODO: implement step 4 here, align pdb fragment to uniprot sequence using pairwisealigner
+        # align pdb fragment to uniprot sequence using pairwisealigner
         # in one case the pdb chain is actually longer than the uniprot so account for that
         # this means some residues will also map to None in the sequence, can fallback to esm2 embedding again if we want to
         # but these residues don't exist in the canonical form so esm2 embedding might not be very informative
         # should be a minor case, we can count how many times it happens
+        len_pdb_seq = len(pdb_sequence)
+        alignments_gen = _aligner.align(pdb_sequence, uniprot_sequence)
+        best_aln = next(iter(alignments_gen))
+        uniprot_positions = [
+            None
+        ] * len_pdb_seq  # each element is the corresponding 0-based position in the uniprot sequence, or None if it didn't map
+        for (p_start, p_end), (u_start, u_end) in zip(
+            best_aln.aligned[0], best_aln.aligned[1]
+        ):  # these are indices of blocks (contiguous sets of matches) with 0 from PDB side and 1 from uniprot side
+            for offset in range(
+                int(p_end) - int(p_start)
+            ):  # add the offset to both indices simulateneously to iterate across them both correctly
+                uniprot_positions[int(p_start) + offset] = int(u_start) + offset
 
         # step1: split the uniprot sequence into N overlapping groups
         # step2: embed them all
         # step3: average rows together that represent the same residue based on overlaps. this gives one
         # matrix of size [len_uniprot_seq, 2560]
         # step4: map each residue to its embedding in this matrix using the indices given by the aligner
-        final_embeddings = []  # this will become size [len(uniprot_sequence),2056]
+        final_embeddings = []  # this will become size [len(uniprot_sequence),2560]
         if len(uniprot_sequence) > 1022:
             # assuming ~50% overlap, this means each split after the first one contains 511 new residues
             n = len(uniprot_sequence) - 511
@@ -136,7 +151,7 @@ for pdb_id, entries in dataset.items():
                 if i == num_chains - 1:  # go until the end, no need to manually set r
                     split_chains.append(uniprot_sequence[l:])
                 else:
-                    r = l + 511
+                    r = l + 1022
                     split_chains.append(uniprot_sequence[l:r])
             uniprot_embeddings = []
             # step2
@@ -148,15 +163,15 @@ for pdb_id, entries in dataset.items():
                 embeddings = output.last_hidden_state[0]
                 embeddings = embeddings[1:-1]
                 embeddings = embeddings.to(torch.float32).cpu().numpy()
-                uniprot_embeddings.append(embeddings)  # size [1022, 2056]
+                uniprot_embeddings.append(embeddings)  # size [1022, 2560]
             # step3
             # move the first 511 of the first chain over, this doesn't overlap with anything so no averaging to do
             for i in range(511):
                 final_embeddings.append(uniprot_embeddings[0][i])
             # handle the overlapping segments
             for i in range(num_chains - 2):
-                this_chain = embeddings[i]
-                next_chain = embeddings[
+                this_chain = uniprot_embeddings[i]
+                next_chain = uniprot_embeddings[
                     i + 1
                 ]  # next_chain goes up until num_chains-2, never touches the last one
                 # second half of this chain and first half of next chain represent the same residues
@@ -165,14 +180,14 @@ for pdb_id, entries in dataset.items():
                     a = this_chain[511 + idx]
                     b = next_chain[
                         idx
-                    ]  # a and b are numpy vectors right? yes of size 2056
+                    ]  # a and b are numpy vectors right? yes of size 2560
                     c = (a + b) / 2
                     final_embeddings.append(c)
             # handle second half of second-to-last chain + last chain
             i = 0
             j = 0
-            a = this_chain[num_chains - 2]  # second to last
-            b = this_chain[num_chains - 1]  # the last chain
+            a = uniprot_embeddings[num_chains - 2]  # second to last
+            b = uniprot_embeddings[num_chains - 1]  # the last chain
             while i < 511:
                 first = a[i + 511]  # gauranteed to exist
                 if j < len(b):
@@ -182,6 +197,10 @@ for pdb_id, entries in dataset.items():
                 else:  # we have finished all the embeddings in the last chain, just toss this one in
                     final_embeddings.append(first)
                 i += 1
+                j += 1
+            # handle last half of last chain, if exists
+            while j < len(b):
+                final_embeddings.append(b[j])
                 j += 1
 
             # lol that last part resembles a leetcode pattern. makes me kinda happy
@@ -197,11 +216,21 @@ for pdb_id, entries in dataset.items():
             embeddings = output.last_hidden_state[0]
             embeddings = embeddings[1:-1]
             embeddings = embeddings.to(torch.float32).cpu().numpy()
-            final_embeddings.append(embeddings)
+            final_embeddings = list(embeddings)
 
-        # step4, align using map indices
+        # for each residue, look up the uniprot position and copy over that row from the uniprot embedding
+        pdb_embeddings = [[0] * 2560 for _ in range(len_pdb_seq)]
+        num_nones = 0
+        for i in range(len_pdb_seq):
+            uniprot_row = uniprot_positions[i]
+            if uniprot_row is None:
+                num_nones += 1
+                continue
+            row = final_embeddings[uniprot_row]
+            pdb_embeddings[i] = row
+        print(f"{num_nones} Nones in position lookup, these are all 0 vectors")
 
-        np.save(embeddings_path / f"{pdb_id}_{chain_id}.npy", embeddings)
+        np.save(embeddings_path / f"{pdb_id}_{chain_id}.npy", pdb_embeddings)
         print(f"successfully saved {pdb_id}_{chain_id}.npy")
 
 with open(data_path / "chain_to_auth_seq_id_map.json", "w") as f:
