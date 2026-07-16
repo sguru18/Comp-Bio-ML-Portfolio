@@ -10,7 +10,7 @@ class MLP(nn.Module):
         super().__init__()
 
         self.encoder = MLPEncoder()
-        self.head = nn.Linear(128, 1)
+        self.head = nn.Linear(256, 1)
 
     def forward(self, x):
         x = self.encoder(x)

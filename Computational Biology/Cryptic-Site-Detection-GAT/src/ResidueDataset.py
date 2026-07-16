@@ -17,7 +17,7 @@ class ResidueDataset(Dataset):
         self.auth_seq_id_to_pos_map = {}
         self.positive_set = set()
         DATA_DIR = Path(__file__).parent.parent / "data"
-        EMBEDDINGS_DIR = Path(__file__).parent.parent / "data/esm2-embeddings"
+        EMBEDDINGS_DIR = Path(__file__).parent.parent / "data/uniprot-esm2-embeddings"
         with open(DATA_DIR / "chain_to_auth_seq_id_map.json") as f:
             m = json.load(f)
 
@@ -37,10 +37,12 @@ class ResidueDataset(Dataset):
                     # a min_pRMSD parameter into dataset class
                     apo_pocket_selection.update(entry["apo_pocket_selection"])
                 for chain in chains:
+                    emb_path = EMBEDDINGS_DIR / f"{pdb_id}_{chain}.npy"
+                    if not emb_path.exists():
+                        print(f"skipping {pdb_id}_{chain}: embedding file not found")
+                        continue
                     key = (pdb_id, chain)
-                    self.embeddings[key] = np.load(
-                        EMBEDDINGS_DIR / f"{pdb_id}_{chain}.npy"
-                    )
+                    self.embeddings[key] = np.load(emb_path)
                     num_residues = self.embeddings[key].shape[0]
                     for pos in range(num_residues):
                         self.index.append((pdb_id, chain, pos))

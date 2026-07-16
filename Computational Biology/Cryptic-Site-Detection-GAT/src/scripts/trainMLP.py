@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 from sklearn.metrics import average_precision_score, roc_auc_score
+import math
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     # criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     # criterion = nn.BCEWithLogitsLoss()
     # TODO: move hyperparams to config
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
 
     all_folds = [FOLDS_DIR / f"train-fold-{i}.json" for i in range(4)]
 
@@ -42,7 +43,10 @@ if __name__ == "__main__":
 
     num_pos = len(training_set.positive_set)
     num_neg = len(training_set) - num_pos
-    pos_weight = torch.tensor([num_neg / num_pos], dtype=torch.float32).to(device)
+    # pos_weight = torch.tensor([num_neg / num_pos], dtype=torch.float32).to(device)
+    pos_weight = torch.tensor([math.sqrt(num_neg / num_pos)], dtype=torch.float32).to(
+        device
+    )
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     val_fold = [all_folds[3]]

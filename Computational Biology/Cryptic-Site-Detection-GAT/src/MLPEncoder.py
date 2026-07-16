@@ -21,8 +21,8 @@ class MLPEncoder(nn.Module):
 
         self.relu = nn.ReLU()
         self.fc1 = nn.Linear(2560, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.dropout = nn.Dropout(0.3)
+        self.fc2 = nn.Linear(256, 256)
+        self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):  # x is 1152 dim from esmc
         x = self.fc1(x)  # [batch_size, 1152] -> [batch_size, 256]

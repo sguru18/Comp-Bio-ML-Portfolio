@@ -32,6 +32,9 @@ else:
 model = AutoModel.from_pretrained("facebook/esm2_t36_3B_UR50D").eval().to(device)
 tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t36_3B_UR50D")
 
+NUM_BAD_API_RESPONSES = 0
+NUM_NONES_IN_POSITION_MAP = 0
+NUM_GOOD_LOOKUPS = 0
 
 with open(dataset_path) as f:
     dataset = json.load(f)
@@ -80,12 +83,14 @@ for pdb_id, entries in dataset.items():
             resp.raise_for_status()
         except requests.RequestException as exc:
             print(f"  WARNING: UniProt FASTA error for {uId}: {exc}")
+            NUM_BAD_API_RESPONSES += 1
             continue
         # response is a header line that starts with > and then lines of 60 char chunks of AA codes
         lines = resp.text.strip().split("\n")
         if not lines or not lines[0].startswith(">"):
             print(f"  WARNING: Unexpected FASTA format for {uId}")
             # we saw that this does happen, 14 chains will not have uniprot sequences
+            NUM_BAD_API_RESPONSES += 1
             continue
             # TODO: fallback to embedding the pdb sequence itself without uniprot
         uniprot_sequence = "".join(lines[1:])
@@ -97,7 +102,7 @@ for pdb_id, entries in dataset.items():
             hetflag, auth_seq_id, icode = residue.get_id()
             if hetflag == " ":
                 code = residue.get_resname()
-                letter = protein_letters_3to1.get(code, "X")
+                letter = protein_letters_3to1.get(code.capitalize(), "X")
                 pdb_sequence += letter
                 # maps the pdb_id_chain_id to a list of auth_seq_ids where each auth_seq_id is in the
                 # position of its residue. ie. residue 0 of this chain maps to the auth_seq_id in index 0
@@ -143,7 +148,7 @@ for pdb_id, entries in dataset.items():
             # i = 0 -> [0:1022] which is [0:511] + [511:1022]
             # i = 1 -> [511:1533] which is [511:1022] + [1022:1533]
             # i = 2 -> [1022:2044] which is [1022:1533] + [1533:2044]
-            # l is always 511 * i, r is 511 * (i+1)
+            # l is always 511 * i, r is 511 * (i+2)
             # beautiful
             # step1
             for i in range(num_chains):
@@ -220,18 +225,22 @@ for pdb_id, entries in dataset.items():
 
         # for each residue, look up the uniprot position and copy over that row from the uniprot embedding
         pdb_embeddings = [[0] * 2560 for _ in range(len_pdb_seq)]
-        num_nones = 0
         for i in range(len_pdb_seq):
             uniprot_row = uniprot_positions[i]
             if uniprot_row is None:
-                num_nones += 1
+                NUM_NONES_IN_POSITION_MAP += 1
                 continue
+            NUM_GOOD_LOOKUPS += 1
             row = final_embeddings[uniprot_row]
             pdb_embeddings[i] = row
-        print(f"{num_nones} Nones in position lookup, these are all 0 vectors")
 
         np.save(embeddings_path / f"{pdb_id}_{chain_id}.npy", pdb_embeddings)
         print(f"successfully saved {pdb_id}_{chain_id}.npy")
+
+print(
+    f"{NUM_NONES_IN_POSITION_MAP} Nones total in position lookup, these are all 0 vectors compared to {NUM_GOOD_LOOKUPS} successful lookups"
+)
+print(f"{NUM_BAD_API_RESPONSES} bad api responses total")
 
 with open(data_path / "chain_to_auth_seq_id_map.json", "w") as f:
     json.dump(residue_map, f)
