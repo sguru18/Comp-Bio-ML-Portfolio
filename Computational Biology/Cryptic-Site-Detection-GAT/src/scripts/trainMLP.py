@@ -21,6 +21,7 @@ if __name__ == "__main__":
 
     ROOT_PATH = Path(__file__).parent.parent.parent
     FOLDS_DIR = ROOT_PATH.resolve() / "data/cryptobench/cryptobench-dataset/folds"
+    MODELS_DIR = ROOT_PATH.resolve() / "checkpoints"
 
     model = MLP().to(device)
     # TODO: pos_weight, how to make dynamic?
@@ -124,6 +125,17 @@ if __name__ == "__main__":
             if auprc > best_val_auprc:
                 best_val_auprc = auprc
                 best_val_auroc = auroc
-                # TODO: checkpoint model
+                print("saving model to checkpoint.pt")
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "val_loss": avg_val_loss,
+                        "auprc": auprc,
+                        "auroc": auroc,
+                    },
+                    MODELS_DIR / f"checkpoint_{best_val_auprc:.3f}.pt",
+                )
             else:
                 print("val auprc not higher than previous epoch")

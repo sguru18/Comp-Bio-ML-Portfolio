@@ -67,7 +67,8 @@ class ResidueDataset(Dataset):
                         pos = self.auth_seq_id_to_pos_map[f"{pdb_id}_{chain}_{seq_id}"]
                     except KeyError:
                         print(
-                            f"non-standard amino acid OR truncated residue on 1 of 5 chains found in apo_pocket_selection and skipped"
+                            # f"non-standard amino acid OR truncated residue on 1 of 5 chains found in apo_pocket_selection and skipped"
+                            f"{pdb_id}_{chain}_{seq_id} not in embedding map, probably non-standard residue"
                         )
                         continue
                     self.positive_set.add((pdb_id, chain, pos))
@@ -76,7 +77,7 @@ class ResidueDataset(Dataset):
         return self.count
 
     def __getitem__(self, idx):
-
+        # damn this is clean
         pdb_id, chain, pos = self.index[idx]
         key = (pdb_id, chain)
         embedding = self.embeddings[key][pos]

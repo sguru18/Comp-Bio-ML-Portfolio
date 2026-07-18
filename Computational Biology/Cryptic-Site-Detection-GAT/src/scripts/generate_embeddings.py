@@ -106,6 +106,8 @@ for pdb_id, entries in dataset.items():
                 pdb_sequence += letter
                 # maps the pdb_id_chain_id to a list of auth_seq_ids where each auth_seq_id is in the
                 # position of its residue. ie. residue 0 of this chain maps to the auth_seq_id in index 0
+                # this is used to later quickly find the position each auth_seq_id has in the residue list
+                # to ultimately get auth_seq_id to embedding effeciently
                 residue_map[key].append(f"{auth_seq_id}{icode.strip()}")
 
         # align pdb fragment to uniprot sequence using pairwisealigner
