@@ -11,6 +11,9 @@ now we'll include all residues in the GAT
 barring any miscalculations with the sasa values, but I was very careful with this and checked articles and docs so
 I think it should be good
 
+the dict produced by this script is ultimately not used. it was going to be used to filter to only residues with
+above 20 sasa but that's scrapped so this script is not actually needed anymore. was highly useful as an experiment though
+
 """
 
 import json

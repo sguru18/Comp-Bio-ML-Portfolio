@@ -135,7 +135,7 @@ if __name__ == "__main__":
                         "auprc": auprc,
                         "auroc": auroc,
                     },
-                    MODELS_DIR / f"checkpoint_{best_val_auprc:.3f}.pt",
+                    MODELS_DIR / f"MLPcheckpoint_{best_val_auprc:.3f}.pt",
                 )
             else:
                 print("val auprc not higher than previous epoch")
